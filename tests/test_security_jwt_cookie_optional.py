@@ -4,6 +4,7 @@ from fastapi import FastAPI, Security
 from fastapi.testclient import TestClient
 
 from fastapi_jwt import JwtAccessCookie, JwtAuthorizationCredentials, JwtRefreshCookie
+from tests.utils import compare_schema
 
 app = FastAPI()
 
@@ -109,7 +110,7 @@ openapi_schema = {
 def test_openapi_schema():
     response = client.get("/openapi.json")
     assert response.status_code == 200, response.text
-    assert response.json() == openapi_schema
+    compare_schema(response.json(), openapi_schema)
 
 
 def test_security_jwt_auth():
