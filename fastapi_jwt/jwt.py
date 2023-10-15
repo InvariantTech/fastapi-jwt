@@ -1,6 +1,6 @@
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Literal, Optional, Set
 from uuid import uuid4
 
 from fastapi.exceptions import HTTPException
@@ -200,16 +200,25 @@ class JwtAuthBase(ABC):
 
     @staticmethod
     def set_access_cookie(
-        response: Response, access_token: str, expires_delta: Optional[timedelta] = None
+        response: Response,
+        access_token: str,
+        expires_delta: Optional[timedelta] = None,
+        cookie_name: str = None,
+        cookie_domain: str = None,
+        path: str = "/",
+        samesite: Literal["strict", "lax", "none"] | None = None,
     ) -> None:
         seconds_expires: Optional[int] = (
             int(expires_delta.total_seconds()) if expires_delta else None
         )
         response.set_cookie(
-            key="access_token_cookie",
+            key=cookie_name or "access_token_cookie",
             value=access_token,
             httponly=False,
             max_age=seconds_expires,
+            domain=cookie_domain,
+            samesite=samesite,
+            path=path,
         )
 
     @staticmethod
@@ -217,27 +226,34 @@ class JwtAuthBase(ABC):
         response: Response,
         refresh_token: str,
         expires_delta: Optional[timedelta] = None,
+        cookie_name: str = None,
+        cookie_domain: str = None,
+        path: str = "/",
+        samesite: Literal["strict", "lax", "none"] | None = None,
     ) -> None:
         seconds_expires: Optional[int] = (
             int(expires_delta.total_seconds()) if expires_delta else None
         )
         response.set_cookie(
-            key="refresh_token_cookie",
+            key=cookie_name or "refresh_token_cookie",
             value=refresh_token,
             httponly=True,
             max_age=seconds_expires,
+            domain=cookie_domain,
+            samesite=samesite,
+            path=path,
         )
 
     @staticmethod
-    def unset_access_cookie(response: Response) -> None:
+    def unset_access_cookie(response: Response, cookie_name: str = None) -> None:
         response.set_cookie(
-            key="access_token_cookie", value="", httponly=False, max_age=-1
+            key=cookie_name or "access_token_cookie", value="", httponly=False, max_age=-1
         )
 
     @staticmethod
-    def unset_refresh_cookie(response: Response) -> None:
+    def unset_refresh_cookie(response: Response, cookie_name: str = None) -> None:
         response.set_cookie(
-            key="refresh_token_cookie", value="", httponly=True, max_age=-1
+            key=cookie_name or "refresh_token_cookie", value="", httponly=True, max_age=-1
         )
 
 
